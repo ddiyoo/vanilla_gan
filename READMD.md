@@ -1,0 +1,1 @@
+##vanilla_dcgan_practice_for_my_dataset
