@@ -28,6 +28,9 @@ from tensorflow.keras import layers
 #
 #    return model
 
+latent_depth = 100
+lr = 0.0001
+
 def generator():
     model = tf.keras.Sequential()
     model.add(layers.Dense(25*25*128, use_bias=False, input_shape=(100,)))
@@ -43,11 +46,26 @@ def generator():
 
     model.add(layers.Conv2DTranspose(64, (5,5),strides=(2,2),padding='same', use_bias=False ))
     assert model.output_shape == (None, 50, 50, 64)
+    model.add(layers.BatchNormalization())
+    model.add(layers.ReLU())
 
-g_test = generator()
+    model.add(layers.Conv2DTranspose(3, (5,5), strides=(2,2), padding='same', use_bias=False, activation='sigmoid'))
+    assert model.output_shape == (None, 100, 100, 3)
+    model.summary()
+    return model
+
+
+# g_test = generator()
 # test = np.random.randint(0,225, size=100)
-test = tf.random.normal([1,100])
-g_test(test)
+# test = tf.random.normal([1,100])
+# g_test(test)
+
+
+generator = generator()
+z_vector = tf.random,normal([1, latent_depth])
+generated_image = generator(z_vector, training=True)
+
+
 
 def discriminator():
     model = tf.keras.Sequential()
@@ -63,3 +81,14 @@ def discriminator():
     model.add(layers.Dense(1))
     model.summary()
     return model
+
+
+##dcgan project and reshape layer?
+
+discriminator = discriminator()
+decision = discriminator(generated_image)
+
+generator_optimizer = tf.keras.optimizers.Adam(lr=lr)
+cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+
+
